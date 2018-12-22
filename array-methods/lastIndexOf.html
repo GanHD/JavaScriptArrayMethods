@@ -1,0 +1,62 @@
+<script src="../simpletest.js"></script>
+<script>
+/*The lastIndexOf() method returns the last index at which a given element
+ can be found in the array, or -1 if it is not present.
+  The array is searched backwards, starting at fromIndex.
+
+function signature: lastIndexOf(array,searchElement,fromIndex);
+ */
+
+function lastIndexOf(array,searchElement,fromIndex){
+  if(arguments.length<3){
+    fromIndex = array.length-1;
+      }
+  if(fromIndex <0){
+    fromIndex = fromIndex + array.length;
+      }
+  for(var i= fromIndex; i > -1; i--){
+    if(array[i]===searchElement && i in array){
+      return i;
+    }
+  }
+  return -1;
+}
+tests({
+  'Searches array backwards for a matching element.':function(){
+    var testArray = [2,1,2,3];
+    var result = lastIndexOf(testArray,2);
+    eq(result,2);
+  },
+  'Uses strict equality.':function(){
+    var testArray = [1,2,3];
+    var result = lastIndexOf(testArray,'2');
+    eq(result,-1);
+  },
+  'If fromIndex is passed through,Starts searching form left to right at that index point.':function(){
+    var result = lastIndexOf([1,0,1],1,2);
+    eq(result,2);
+  },
+  'If fromIndex is equal to or greater than the array.length, searches whole function, .':function(){
+    var result = lastIndexOf([0,1,2,3],0,4);
+    eq(result,0);
+  },
+  'If fromIndex is negative, it is used as an offset from the end of the array.':function(){
+    var result = lastIndexOf([1,0,1],1,-2);
+    eq(result,0);
+  },
+  'If the calculated index is less than 0, -1 is returned, i.e. the array will not be searched..':function(){
+    var result = lastIndexOf([0,1,2,3],0,-20);
+    eq(result,-1);
+  },
+  'If no elements in array matches searchElement return -1.':function(){
+    var result = lastIndexOf([0,1,2,3],20);
+    eq(result,-1);
+  },
+  '.':function(){},
+  '.':function(){},
+  '.':function(){},
+  '.':function(){},
+  '.':function(){},
+  '.':function(){},
+})
+</script>

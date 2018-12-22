@@ -1,0 +1,150 @@
+<script src="../simpletest.js"></script>
+<script type="text/javascript">
+/*like reduce but
+input: array callback(accumulator,currentValue,index,array) initialValue
+output:single value*/
+function reduceRight(array,callback,initialValue){
+  var objKeys = Object.keys(array);
+  var length = objKeys.length
+  var accumulator = initialValue;
+  var startingIndex = objKeys[length-1];
+
+  if(arguments.length <3){
+    if(objKeys.length ===0){
+      throw new TypeError("no array or initalValue given")
+    }
+    accumulator = array[objKeys[length-1]];
+    startingIndex = objKeys[length-2];
+  }
+
+  for(var i=startingIndex; i > -1 ; i--){
+    if(i in array){
+      accumulator = callback(accumulator,array[i],i,array)
+    }
+  }
+  return accumulator;
+}
+
+tests({
+  'If initial Value, callback should run array.length times': function() {
+    var counter = 0;
+    reduceRight([1, 2], function(accumulator, currentValue) {
+      counter++;
+    }, 0);
+    eq(counter, 2);
+  },
+  'If no initial Value, callback should run array.length -1  times': function() {
+    var counter = 0;
+    reduceRight([1, 2, 3], function(accumulator, currentValue) {
+      counter++;
+    });
+    eq(counter, 2);
+  },
+
+  'callback should take in accumulator as first argument':function(){
+    reduceRight([1],function(accumulator,currentValue,index,array){
+      eq(accumulator,0);
+    },0)
+  },
+  'callback should take in current value as second argument.':function(){
+    reduceRight([1],function(accumulator,currentValue,index,array){
+      eq(currentValue,1);
+    },0)
+  },
+  'callback should take in index as third argument.':function(){
+    reduceRight([1],function(accumulator,currentValue,index,array){
+      eq(index,0);
+    },0)
+  },
+  'callback should take in array as fourth argument.':function(){
+    reduceRight([1],function(accumulator,currentValue,index,array){
+      eq(JSON.stringify(array),JSON.stringify([1]));
+    },0)
+  },
+
+
+  'if no initalValue is passed in, accumulator should start as the last element of the array.':function(){
+    reduceRight([1,2],function(accumulator,currentValue,index,array){
+      eq(accumulator,2);
+    })
+  },
+  'if no initalValue is passed in, currentValue should start as the secnd-to-last element of the array.':function(){
+    reduceRight([1,2],function(accumulator,currentValue,index,array){
+      eq(currentValue,1);
+    })
+  },
+
+  'it should actually reduce.':function(){
+    function adder(valueOne, valueTwo) {
+      return valueOne + valueTwo;
+    }
+    var reduceTestOne = reduceRight([12, 1, 4], adder, 2);
+    eq(reduceTestOne, 19);
+
+    var reduceTestTwo = reduceRight([1, 2, 3], adder);
+    eq(6, reduceTestTwo);
+  },
+  'it should reduce from right to left.':function(){
+    var reduceTest = reduceRight(['o','ll','e'],function(accumulator,currentValue,index,array){
+      return accumulator+currentValue
+    },'h')
+    eq(reduceTest,'hello')
+  },
+
+  'If no array and no inital value, it should throw a type error.':function(){
+    try {
+      reduceRight([], function(){});
+    } catch (e) {
+      if (!(e instanceof TypeError)) {
+        fail();
+      }
+    }
+  },
+  'If only one value in the array and no initial value, it should return that value without running the callback.':function(){
+    var reduceTest = reduceRight([1],function(){
+      reduceTest = 20;
+      fail();});
+    eq(reduceTest,1);
+  },
+  'If empty array and a initial value, it should return initialValue without running the callback.':function(){
+    var reduceTest = reduceRight([],function(){
+      reduceTest = 20;
+      fail();},1);
+    eq(reduceTest,1);
+  },
+
+
+  'It should exclude holes.':function(){
+    function adder(valueOne, valueTwo) {
+      return valueOne + valueTwo;
+    }
+    var reduceTestOne = reduceRight([,,12, 1,,, 4,], adder, 2);
+    eq(reduceTestOne, 19);
+  },
+  'it should not mutate the original array':function(){
+    var array = [1,2,3];
+    reduceRight(array,function(accumulator,currentValue){
+      return accumulator+currentValue;
+    },0)
+    eq(JSON.stringify(array),JSON.stringify([1,2,3]));
+  },
+  'it should not pass into the callback elements appeneded to the array':function(){
+    var array = [1,2,3];
+    var reduceTest = reduceRight(array,function(accumulator,currentValue,i,array){
+      array.push(12);
+      return accumulator+currentValue;
+    },0);
+    eq(reduceTest,6)
+  },
+  'if a existing unvisited element is cahnged, the new value is passed into the callback when visited':function(){
+    var array = [1,0,0,0];
+    var reduceTest = reduceRight(array,function(accumulator,currentValue,i,array){
+      if(array.length ===4){
+        array.splice(0,0,2);
+      }
+      return accumulator+currentValue;
+    });
+    eq(reduceTest,3)
+  },
+})
+</script>

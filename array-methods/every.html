@@ -1,0 +1,114 @@
+<script src="../simpletest.js"></script>
+<script>
+/*every tests if all elements of an array passes a test implemented
+ in the callback function
+
+input:every(array, callback(element, index, array), optionalThisArg)
+output: true or false*/
+function every(array,callback,optionalThisArg){
+  var length = array.length
+  if(optionalThisArg){
+    callback = callback.bind(optionalThisArg);
+  }
+  for(var i =0; i<length; i++){
+    if(array[i]){
+      if(!callback(array[i],i,array)){
+      return false;
+    }
+  }
+  }
+  return true;
+}
+
+tests({
+  'It should pass the ith element of the array as the callbacks first arg.':function(){
+    every([1],function(element){
+      eq(element,1);
+    })
+  },
+  'It should pass the index as the callbacks 2nd arg.':function(){
+    every([1],function(element,i){
+      eq(i, 0);
+    });
+  },
+  'It should pass the array as the callbacks 3rd arg .':function(){
+    var originalArray = [0];
+    every(originalArray,function(element,i,array){
+      eq(originalArray, array);
+    });
+  },
+  'It shouldaccept an optional this value.':function(){
+    every([123.23,1],function(element){
+      eq(this.description, 'optional this arg');
+    }, {description:'optional this arg'});
+  },
+
+  'It should run callback array.length times if all elements pass the test.':function(){
+    var numberOfTimesCallbackHasRun = 0;
+     every([1,2,3,2],function(element){
+      numberOfTimesCallbackHasRun++;
+      return element > 0;
+    });
+    eq(numberOfTimesCallbackHasRun,4);
+  },
+  'If one element of the array returns false when passed into the callback, every should return false.':function(){
+    var numberOfTimesCallbackHasRun = 0;
+    var result = every([1,-1,2,3,2],function(element){
+      numberOfTimesCallbackHasRun++;
+      return element > 0;
+    });
+    eq(result,false)
+    eq(numberOfTimesCallbackHasRun,2);
+  },
+  'If all elements returns true when passed into the callback, it should return true.':function(){
+    var result = every([1,2,3,2],function(element){
+      return element > 0;
+    });
+    eq(result, true);
+  },
+  'If an element is deleted it is not visited.':function(){
+    var numberOfTimesCallbackHasRun = 0;
+    var result = every([1,2,3,2],function(element,i,array){
+      array.splice(3,1);
+      numberOfTimesCallbackHasRun++;
+      return element > 0;
+    });
+    eq(result, true);
+    eq(numberOfTimesCallbackHasRun,3);
+  },
+  'If a element is empty it should not be visited.':function(){
+    var numberOfTimesCallbackHasRun = 0;
+    var result = every([1,,3,2],function(element,i,array){
+      numberOfTimesCallbackHasRun++;
+      return element > 0;
+    });
+    eq(result, true);
+    eq(numberOfTimesCallbackHasRun,3);
+  },
+
+  'Every should not mutate the orginal array.':function(){
+    var array = [1,2]
+    var result = every(array,function(element,i,callbackArray){
+      return element > 0;
+    });
+    eq(JSON.stringify(array), JSON.stringify([1,2]));
+
+  },
+  'Every should not visit any elements appeneded to the array.':function(){
+    var numberOfTimesCallbackHasRun = 0;
+    var result = every([1,,3,2],function(element,i,array){
+      array.push(-1);
+      numberOfTimesCallbackHasRun++;
+      return element > 0;
+    });
+    eq(result, true);
+    eq(numberOfTimesCallbackHasRun,3);
+  },
+  'An empty array should return true.':function(){
+    var result = every([],function(element){
+      return element === 2;
+    });
+    eq(result,true);
+  },
+})
+</script>

@@ -1,0 +1,205 @@
+<script src="../simpletest.js"></script>
+<script>
+/* slice returns a portion of an array
+function signature: slice(array[, begin[, end]])
+ */
+function slice(array, begin, end){
+  var resultArray = [];
+  if(end === true){
+    end=1;
+  }
+  if((!(Number.isInteger(end))  && end != undefined) || end === null){
+    return resultArray;
+  }
+  if(begin===true){
+    begin =1;
+  }
+  if( !(Number.isInteger(begin))){
+    begin =0;
+  }
+
+  if(end > array.length || !(Number.isInteger(end))){
+    end = array.length;
+  }
+
+  if(begin <0){
+    begin = array.length + begin;
+    if(begin < 0){
+      begin =0;
+    }
+  }
+
+  if(end <0){
+    end = array.length + end;
+    if(end < 0){
+      end =0;
+    }
+  }
+
+  for(var i=begin;i<end;i++){
+      resultArray.push(array[i]);
+  }
+  return resultArray;
+}
+
+tests({
+  'slice shuld return an array.':function(){
+    var resultArray = slice([1,2,3]);
+    eq(Array.isArray(resultArray),true)
+  },
+  'slice should not mutate the orginal array.':function(){
+    var array = [12,1,1]
+    var resultArray = slice(array);
+    eq(JSON.stringify(array), JSON.stringify([12,1,1]));
+  },
+
+  'If no begin or end var is passed through, return a copy of the array.':function(){
+    var array = [12,1,1]
+    var resultArray = slice(array);
+   eq(JSON.stringify(array), JSON.stringify(resultArray));
+  },
+
+  'If begin is greater than the length of the sequence, an empty array is returned.':function(){
+    var array = [12,1,1]
+    var resultArray = slice(array,40);
+   eq(JSON.stringify([]), JSON.stringify(resultArray));
+  },
+  'If begin is passed through, the extraction begins from that point.':function(){
+    var array = [12,1,1]
+    var resultArray = slice(array,1);
+   eq(JSON.stringify([1,1]), JSON.stringify(resultArray));
+  },
+  'A negative index can be used for begin, indicating an offset from the end of the sequence.':function(){
+    var array = [12,1,1]
+    var resultArray = slice(array,-2);
+   eq(JSON.stringify([1,1]), JSON.stringify(resultArray));
+  },
+
+  'If end is passed through, extraction stops at that index.':function(){
+    var array = [12,1,1]
+    var resultArray = slice(array,0,1);
+    eq(JSON.stringify([12]), JSON.stringify(resultArray));
+  },
+  'If end is greater than the length of the sequence, slice extracts through to the end of the sequence (arr.length).':function(){
+    var array = [12,1,1]
+    var resultArray = slice(array,0,12);
+    eq(JSON.stringify([12,1,1]), JSON.stringify(resultArray));
+  },
+  'A negative index can be used for end, indicating an offset from the end of the sequence.':function(){
+    var array = [12,1,1]
+    var resultArray = slice(array,0,-2);
+    eq(JSON.stringify([12]), JSON.stringify(resultArray));
+  },
+  'If begin is undefined, slice begins from index 0.':function(){
+    var array = [12,1,1]
+    var resultArray = slice(array,undefined,2);
+    eq(JSON.stringify([12,1]), JSON.stringify(resultArray));
+  },
+
+  'slice should copy object references and not the obj itself.':function(){
+    var array= [{a:true}];
+    var resultArray = slice(array);
+    eq(resultArray[0].a, true);
+    array[0].a = false;
+    eq(resultArray[0].a, false);
+  },
+  'If a new element is added to either array, the other array is not affected.':function(){
+    var array = [12,1,1]
+    var resultArray = slice(array,1);
+    array.push(1);
+   eq(JSON.stringify([1,1]), JSON.stringify(resultArray));
+   resultArray.push(123);
+   eq(JSON.stringify([12,1,1,1]), JSON.stringify(array));
+  },
+  'For strings, numbers and booleans (not String, Number and Boolean objects), slice copies the values into the new array.':function(){
+    var array =['yes',2,false]
+    var resultArray = slice(array);
+    eq(JSON.stringify(['yes',2,false]), JSON.stringify(resultArray));
+  },
+  'Changes to the string, number or boolean in one array do not affect the other array.':function(){
+    var array =['yes',2,false]
+    var resultArray = slice(array);
+    array[0]='no';
+    array[2]=true;
+    eq(JSON.stringify(['yes',2,false]), JSON.stringify(resultArray));
+    resultArray[0]='g'
+    resultArray[2]=undefined;
+    eq(JSON.stringify(['no',2,true]), JSON.stringify(array));
+  },
+  'If end is undefined, end should be set to array.lenght.':function(){
+    var array = [12,1,1]
+    var resultArray = slice(array,1,undefined);
+   eq(JSON.stringify([1,1]), JSON.stringify(resultArray));
+  },
+  'If begin is NaN, then begin should be set to 0.':function(){
+    var array = [12,1,1]
+    var resultArray = slice(array,NaN,2);
+   eq(JSON.stringify([12,1]), JSON.stringify(resultArray));
+  },
+  'slice should copy over holes.': function(){
+    var array =[1,,,,,1]
+    var resultArray = slice(array);
+    eq(array[2],resultArray[2]);
+     eq(resultArray.length, array.length);
+  },
+  'If endIndex is true, return a new array contains the first element.': function () {
+    var result = slice([1, 2, 3], 0, true);
+    eq(result.length, 1);
+    eq(result[0], 1);
+    var result = slice([2, 3, 4], [], true);
+    eq(result.length, 1);
+    eq(result[0], 2);
+  },
+  'If beginIndex is not a number, it begins from index 0, except for true.': function () {
+    var result = slice([1, 2], []);
+    eq(result[0], 1);
+    eq(result[1], 2);
+    var result = slice([1, 2], 'hi');
+    eq(result[0], 1);
+    eq(result[1], 2);
+    var result = slice([1, 2], false);
+    eq(result[0], 1);
+    eq(result[1], 2);
+    var result = slice([1, 2], {});
+    eq(result[0], 1);
+    eq(result[1], 2);
+    var result = slice([1, 2], function () {});
+    eq(result[0], 1);
+    eq(result[1], 2);
+    var result = slice([1, 2], null);
+    eq(result[0], 1);
+    eq(result[1], 2);
+    var result = slice([1, 2], NaN);
+    eq(result[0], 1);
+    eq(result[1], 2);
+    var result = slice([1, 2], undefined);
+    eq(result[0], 1);
+    eq(result[1], 2);
+  },
+  'If beginIndex is true, it begins from index 1, extracts through the end of the sequence.': function () {
+    var result = slice([1, 2], true);
+    eq(result[0], 2);
+  },
+  'If computedBegin < 0, slice begins from index 0.': function () {
+    var result = slice([1, 2, 3], -6);//[1, 2, 3]
+    eq(result.length, 3)
+  },
+  'If end is not a number, returns empty, except for true.': function () {
+    var result = slice([1, 2],0, []);
+    eq(result.length,0);
+    var result = slice([1, 2],0, 'hi');
+eq(result.length,0);
+    var result = slice([1, 2],0, false);
+eq(result.length,0);
+    var result = slice([1, 2],0, {});
+eq(result.length,0);
+    var result = slice([1, 2],0, function () {});
+eq(result.length,0);
+    var result = slice([1, 2],0, null);
+eq(result.length,0);
+    var result = slice([1, 2],0, NaN);
+eq(result.length,0);
+
+  },
+})
+</script>

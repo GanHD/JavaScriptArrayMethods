@@ -1,0 +1,63 @@
+<script src="../simpletest.js"></script>
+<script>
+/* Includes returns true or false if an element includes a certain elements
+ funciton signature: includes(array, searchElement[, fromIndex])
+
+
+
+ */
+function includes(array,searchElement,fromIndex){
+  if(arguments.length < 3){
+    fromIndex =0;
+  }
+  if(fromIndex < 0){
+    fromIndex = array.length + fromIndex;
+  }
+  for(var i = fromIndex; i <array.length; i++){
+    if(array[i]=== searchElement||Object.is(array[i], searchElement)){
+      return true;
+    }
+  }
+  return false;
+}
+tests({
+  'Returns true if an element in the array matches searchElement.':function(){
+    var result = includes([0,1,2,3],3);
+    eq(result, true);
+    },
+  'Returns false if no elements in the array matches searchElement.':function(){
+    var result = includes([0,1,2,3],22);
+    eq(result, false);
+   },
+
+  'If fromIndex is passed through, begin searching from that index.':function(){
+    var result = includes([0,1,2,3],0,1);
+    eq(result, false);
+    },
+  'If fromIndex is negative, offset the starting index from array.length.':function(){
+    var result = includes([0,1,2,3],0,-2);
+    eq(result, false);
+    var result = includes([0,1,2,3],2,-2);
+    eq(result, true);
+  },
+
+  'All values of 0 are equal(-0===0).':function(){
+    var result = includes([0,1,2,3],-0);
+    eq(result, true);
+  },
+  'Returns true if searchElement is undefined and an element is a hole.':function(){
+    var result = includes([0,1,2,3,,],undefined);
+    eq(result, true);
+  },
+  'Returns true if searchElement is Nan, and any element is NaN.':function(){
+    var result = includes([0,1,2,3,NaN,],NaN);
+    eq(result, true);
+  },
+  'If fromIndex is larger or equal to than array.length, returns false and array isnt searched.':function(){
+    var result = includes([0,1,2,3],3,10);
+    eq(result, false);
+    var result = includes([0,1,2,3],3,4);
+    eq(result, false);
+  },
+})
+</script>

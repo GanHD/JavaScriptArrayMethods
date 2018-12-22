@@ -1,0 +1,72 @@
+<script src="../simpletest.js"></script>
+<script>
+/* returns the first index of the lement in the array that matches the given elemnt
+  returns -1 if no matching array
+  3rd arg is the index it starts searching from
+  function signature: indexOf(array,searchElement,startingIndex)
+ */
+function indexOf(array,searchElement,startingIndex){
+  if(arguments.length < 3 ){
+    startingIndex = 0;
+  }
+  if(startingIndex < 0){
+    startingIndex = (array.length+startingIndex);
+  }
+  for(var i=startingIndex; i<array.length;i++){
+    if(array[i]===searchElement && i in array){
+      return i;
+    }
+  }
+  return -1;
+}
+tests({
+  'Returns the index position of the first element === to searchElement.':function(){
+    var testArray = [1,2,3];
+    var result = indexOf(testArray,2);
+    eq(result,1);
+  },
+
+  'if no element matches searchElement, returns -1.':function(){
+    var testArray = [1,2,3];
+    var result = indexOf(testArray,23);
+    eq(result,-1);
+  },
+  'compares searchElementto array w/ strict equaity':function(){
+    var testArray = [1,2,3];
+    var result = indexOf(testArray,'2');
+    eq(result,-1);
+  },
+
+  'If startingIndex arg provided, start searching array from that index pos.':function(){
+    var testArray = [1,2,3,1];
+    var result = indexOf(testArray,1,1);
+    eq(result,3);
+  },
+  'If startingIndex arg is negative, starting index is from the offset of array.length.':function(){
+    var testArray = [1,2,0,2,3,2];
+    var result = indexOf(testArray,2,-2);
+    eq(result,5);
+  },
+  'If fromIndex is a negative number, and the calculated offset results in a new fromIndex that is less than zero, it should search the whole array.':function(){
+    var testArray = [1,2,3,2];
+    var result = indexOf(testArray,2,-9);
+    eq(result,1);
+  },
+
+  'if startingIndex is greater or equal to than array.length, return -1.':function(){
+    var result = indexOf([1],1,1);
+    eq(result,-1);
+  },
+
+  'It should skip holes.':function(){
+    var result = indexOf([,,,,],1);
+    eq(result,-1)
+  },
+
+  'It should ignore a startingIndex of undefined.': function() {
+    var returnedIndex = indexOf([, , ,], undefined);
+    eq(returnedIndex, -1);
+  },
+
+})
+</script>

@@ -1,0 +1,188 @@
+<script src="../simpletest.js"></script>
+<script>
+  /*The shift() method removes the first element from an array and returns that removed element. This method changes the length of the array.
+
+ */
+
+  function shift(array) {
+    var firstElement = array[0];
+    if (typeof array === 'number') {
+      throw new SyntaxError('Invalid or unexpected token');
+    }
+    if (!(array instanceof Array) && typeof array === 'object') {
+      if(!Number.isInteger(array.length)){
+        array.length = Math.floor(array.length)
+      }
+      if(array.length < 0 || isNaN(array.length)){
+        array.length=0;
+        return undefined;
+      }
+      for(var i=0; i<array.length; i++){
+        array[i] = array[i+1];
+      }
+      array.length--;
+      delete array[array.length];
+      return firstElement
+    }
+    if (!(array instanceof Array) && typeof array != 'object') {
+      throw new TypeError('shift(' + array + ') is not a function');
+    }
+    array.splice(0, 1);
+    return firstElement;
+  }
+  tests({
+    'shift returns the first element.': function(){
+      array = [1, 2, 3];
+      result = shift(array);
+      eq(result, 1);
+    },
+    'shift reduces array.length.': function(){
+      array = [1, 2, 3];
+      result = shift(array);
+      eq(array.length, 2);
+    },
+    'shift removes null.': function(){
+      array = [null, 2, 3];
+      result = shift(array);
+      eq(result, null);
+    },
+    'shift removes udnefined.': function(){
+      array = [undefined, 2, 3];
+      result = shift(array);
+      eq(result, undefined);
+    },
+    'shift removes holes.': function(){
+      array = [, 2, 3];
+      result = shift(array);
+      eq(result, undefined);
+    },
+    'shift removes strings.': function(){
+      array = ['yes', 2, 3];
+      result = shift(array);
+      eq(result, 'yes');
+    },
+    'shift removes NaN.': function(){
+      array = [NaN, 2, 3];
+      result = shift(array);
+      eq(isNaN(result), true);
+    },
+    'If the array is empty shift retunrs undefined.': function(){
+      array = [];
+      result = shift(array);
+      eq(result, undefined);
+    },
+
+    'Works for array like objects.': function(){
+      var testObject = {
+        0:1,
+        1:2,
+        length:2
+      }
+      var result = shift(testObject);
+      eq(result,1);
+      eq(testObject.length,1);
+      eq(testObject[0],2);
+      eq(testObject[1], undefined);
+    },
+    'If array like object has no length, create length property and set it to 0, do not change obj values.': function(){
+      var testObject = {
+        0:1,
+        1:2
+      }
+      var result = shift(testObject);
+      eq(result,undefined);
+      eq(testObject.length,0);
+      eq(testObject[0],1);
+      eq(testObject[1], 2);
+    },
+    'If array like object length is NaN, create length property and set it to 0, do not change obj values.': function(){
+      var testObject = {
+        0:1,
+        1:2
+      }
+      var result = shift(testObject);
+      eq(result,undefined);
+      eq(testObject.length,0);
+      eq(testObject[0],1);
+      eq(testObject[1], 2);
+    },
+    'If array like object lengt is null, create length property and set it to 0, do not change obj values.': function(){
+      var testObject = {
+        0:1,
+        1:2
+      }
+      var result = shift(testObject);
+      eq(result,undefined);
+      eq(testObject.length,0);
+      eq(testObject[0],1);
+      eq(testObject[1], 2);
+    },
+    'If array like object length is a float, round down and substract length by 1,  return first object. Delete array[array.length]': function(){
+      var testObject = {
+        0:1,
+        1:2,
+        2:3,
+        length:2.5
+      }
+      var result = shift(testObject);
+      eq(result,1);
+      eq(testObject.length,1);
+      eq(testObject[0],2);
+      eq(testObject[2], 3);
+      var testObject = {
+        0:1,
+        1:2,
+        2:3,
+        3:4,
+        4:5,
+        length:3.5
+      }
+      var result = shift(testObject);
+      eq(result,1);
+      eq(testObject.length,2);
+      eq(testObject[0],2);
+      eq(testObject[2], undefined);
+    },
+
+
+    'Type error if array is string .': function(){
+      try {
+        shift('fdas');
+      } catch (e) {
+        if (!e) {
+          fail();
+        }
+      }
+    },
+    'Throw error if array is function': function() {
+      try {
+        shift(function() {
+          console.log('error');
+        });
+      } catch (e) {
+        if (!e) {
+          fail();
+        }
+      }
+    },
+    'Throw error if array is boolean': function() {
+      try {
+        shift(true);
+      } catch (e) {
+        if (!e) {
+          fail();
+        }
+      }
+    },
+    'Uncaught SyntaxError: Invalid or unexpected token if array is number.': function() {
+      try {
+        shift(1);
+      } catch (e) {
+        if (!e) {
+          fail();
+        }
+      }
+    },
+
+  })
+</script>

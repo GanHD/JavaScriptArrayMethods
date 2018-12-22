@@ -1,0 +1,178 @@
+<script src="../simpletest.js"></script>
+<script type="text/javascript">
+  /*Mutates the array and returns the reversed version of it */
+  function reverse(array){
+    if(typeof array === 'number'){
+      return new Number(array);
+    }
+    if(typeof array === 'boolean'){
+      return new Boolean(array);
+    }
+    if(typeof array === 'string' || array instanceof String){
+      throw new TypeError('Cannot assign to read only property 0 of object [object String]')
+    }
+    if(!(array instanceof Array) && !Number.isInteger(array.length)){
+      return array
+    }
+    var duplicateArray= Array.prototype.slice.call(array);
+    for(var i=0;(i<array.length); i++){
+      if(array.length-i-1 in duplicateArray){
+        array[i] = duplicateArray[array.length-i-1];
+      }else{
+        delete array[i];
+      }
+    }
+    return array;
+  }
+  tests({
+    'returns the original array.': function(){
+      var array = [1,2,3];
+      var result = reverse(array);
+      eq(array, result);
+    },
+    'the array is now in reverse Order.':function(){
+      var array = [1,2,3];
+      reverse(array);
+      var expectedResult = [3,2,1];
+      for(var i=0; i<expectedResult.length;i++){
+        eq(array[i], expectedResult[i]);
+      }
+    },
+
+    'Can reverse null undefined nan .':function(){
+      var array = [null,undefined,NaN];
+      reverse(array);
+      var expectedResult =[NaN,undefined,null];
+      for(var i=1; i<expectedResult.length;i++){
+        eq(array[i], expectedResult[i]);
+      }
+      eq(isNaN(array[0]),true)
+    },
+    'Can reverse holes.':function(){
+      var array = [,1,2];
+      reverse(array);
+      var expectedResult = [2, 1, ,];
+      eq(array[0],2);
+      eq(array[1],1);
+      eq(2 in array, false)
+    },
+    'It should not ignore holes.': function () {
+      var testArray = [1, , 3];
+      reverse(testArray);
+      eq(testArray[0], 3);
+      eq(testArray[2], 1);
+      eq(1 in testArray, false);
+    },
+
+    'works with obj like arrays.':function(){
+      var testObject = {0:1, 1:2, 2:3, length:3};
+      reverse(testObject);
+      var expectedResult = [3,2,1];
+      for(var i=0; i<expectedResult.length;i++){
+        eq(testObject[i], expectedResult[i]);
+      }
+    },
+    'returns objlike array w/o modifing if no length property.':function(){
+      var testObject = {0:1, 1:2, 2:3};
+      reverse(testObject);
+      var expectedResult = [1,2,3];
+      for(var i=0; i<expectedResult.length;i++){
+        eq(testObject[i], expectedResult[i]);
+      }
+    },
+    'returns objlike array w/o modifing if  length is undefined.':function(){
+      var testObject = {0:1, 1:2, 2:3, length:undefined};
+      reverse(testObject);
+      var expectedResult = [1,2,3];
+      for(var i=0; i<expectedResult.length;i++){
+        eq(testObject[i], expectedResult[i]);
+        eq(testObject.length, undefined);
+      }
+    },
+    'returns objlike array w/o modifing if  length is null.':function(){
+      var testObject = {0:1, 1:2, 2:3, length:null};
+      reverse(testObject);
+      var expectedResult = [1,2,3];
+      for(var i=0; i<expectedResult.length;i++){
+        eq(testObject[i], expectedResult[i]);
+        eq(testObject.length, null);
+      }
+    },
+    'returns objlike array w/o modifing if  length is NaN.':function(){
+      var testObject = {0:1, 1:2, 2:3, length:NaN};
+      reverse(testObject);
+      var expectedResult = [1,2,3];
+      for(var i=0; i<expectedResult.length;i++){
+        eq(testObject[i], expectedResult[i]);
+        eq(isNaN(testObject.length) , true);
+      }
+    },
+    'Obj-like arrays, with lengths that are floats, called into reverse are returned with no cahnges .':function(){
+      var testObject = {0:1, 1:2, 2:3, length:1.1};
+      reverse(testObject);
+      var expectedResult = [1,2,3];
+      for(var i=0; i<expectedResult.length;i++){
+        eq(testObject[i], expectedResult[i]);
+        eq(testObject.length, 1.1);
+      }
+    },
+    'works with obj like arrays with values of undefined NaN and Null.':function(){
+      var testObject = {0:undefined, 1:null, 2:NaN, length:3};
+      reverse(testObject);
+      var expectedResult = [NaN,null,undefined];
+      for(var i=1; i<expectedResult.length;i++){
+        eq(testObject[i], expectedResult[i]);
+        eq(testObject.length,3);
+      }
+      eq(isNaN(testObject[0]),true);
+    },
+
+    'Primitve integers called into reverse are returned as that number as an object.':function(){
+      var result = reverse(1);
+      eq(result instanceof Number, true);
+      eq(result.valueOf(), 1)
+    },
+    'Primitve booleans called into reverse are returned as that boolean as an object.':function(){
+      var result = reverse(true);
+      eq(result instanceof Boolean, true);
+      eq(result.valueOf(), true)
+    },
+    'Functions called into the object should be returned.':function(){
+      function testFunction(adfs){
+        console.log('I shouldnt run');
+	     }
+       var result= reverse(testFunction);
+       eq(result, testFunction);
+    },
+    'number Objects called into the object should be returned w/o modification.':function(){
+      var numObj = new Number(1);
+       var result= reverse(numObj);
+       eq(result, numObj);
+       eq(numObj.valueOf(),1);
+    },
+    'boolean Objects called into the object should be returned w/o modification.':function(){
+      var booleanObj = new Boolean(true);
+       var result= reverse(booleanObj);
+       eq(result, booleanObj);
+       eq(booleanObj.valueOf(),true);
+    },
+
+    'Primitve Strings return typeError.':function(){
+      try{
+        reverse('fads');
+      }catch(e){
+        var isTypeError = e instanceof TypeError;
+      }
+      eq(isTypeError, true)
+    },
+    ' String Objects return typeError.':function(){
+      try{
+        var strObj = new String('yes')
+        reverse(strObj);
+      }catch(e){
+        var isTypeError = e instanceof TypeError;
+      }
+      eq(isTypeError, true)
+    },
+  })
+</script>

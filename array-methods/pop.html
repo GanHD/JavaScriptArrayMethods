@@ -1,0 +1,209 @@
+<script src="../simpletest.js"></script>
+<script>
+/*The pop() method removes the last element from an array and returns that element. This method changes the length of the array.
+returns the removed element or undefined if array is empty
+
+ */
+function pop(array){
+  var lastElement = undefined;
+  var lastElementIndex = array.length - 1;
+
+  if(typeof array === 'number'){
+    throw new SyntaxError('Invalid or unexpected token');
+  }
+
+  if(!(array instanceof Array) && typeof array === 'object'){
+    if(!Number.isInteger(lastElementIndex)){
+      lastElementIndex = Math.floor(lastElementIndex);
+      array.length = Math.floor(array.length);
+    }
+    if(lastElementIndex < 0 || isNaN(lastElementIndex)){
+      array.length=0;
+      return undefined;
+    }
+    lastElement = array[lastElementIndex];
+    while(lastElementIndex + 1 in array){
+      array[lastElementIndex]= array[lastElementIndex +1];
+      lastElementIndex++
+    }
+    delete array[lastElementIndex];
+
+    array.length--;
+    return lastElement;
+  }
+
+  if(!(array instanceof Array)){
+    throw new TypeError('push('+array+') is not a function');
+  }
+
+if(lastElementIndex  in array ){
+  lastElement = array[lastElementIndex];
+  array.splice(lastElementIndex,1);
+}
+
+return lastElement;
+}
+tests({
+  'if array is empty return undefined.': function(){
+    var result =pop([]);
+    eq(result,undefined);
+  },
+  'If there is elements in the array, pop() deletes the last one.':function(){
+    var array = [1,2,3];
+    var result =pop(array);
+    eq(2 in array, false);
+  },
+  'Pop() reduces array.length.':function(){
+    var array = [1,2,3];
+    var result =pop(array);
+    eq(array.length , 2);
+  },
+  'Pop returns the removed element.':function(){
+    var array = [1,2,3];
+    var result =pop(array);
+    eq(result, 3);
+  },
+
+  'Can pop null.':function(){
+    var array = [1,2,null];
+    var result =pop(array);
+    eq(result, null);
+  },
+  'Can pop NaN.':function(){
+    var array = [1,2,NaN];
+    var result =pop(array);
+    eq(result != result, true);
+  },
+  'Can pop undefined .':function(){
+    var array = [1,2,undefined];
+    var result =pop(array);
+    eq(result, undefined);
+  },
+  'Can pop holes.':function(){
+    var array = [1,2,,];
+    var result =pop(array);
+    eq(result, undefined);
+  },
+
+  'Type error if array is string or boolean or function.':function(){
+    try{
+      pop('fdas');
+    }catch(e){
+      if(!e){
+        fail();
+      }
+    }
+    try{
+      pop(function (){
+        console.log('error');
+      });
+    }catch(e){
+      if(!e){
+        fail();
+      }
+    }
+    try{
+      pop(true);
+    }catch(e){
+      if(!e){
+        fail();
+      }
+    }
+
+  },
+  'Uncaught SyntaxError: Invalid or unexpected token if array is number.':function(){
+    try{
+      pop(1);
+    }catch(e){
+      if(!e){
+        fail();
+      }
+    }
+  },
+  'Can pop array like objects.':function(){
+  var testObject = {
+    0:1,
+    1:2,
+    2:3,
+    length:3,
+  }
+  var result = pop(testObject);
+  eq(result,3);
+  eq(testObject.length , 2);
+  eq(testObject[2] , undefined);
+  eq(testObject[1] , 2);
+  },
+  'If array like obj has no length, create length property and set it to 0.Return undefined. Do not change array':function(){
+    var testObject = {
+      0:1,
+      1:2,
+      2:3,
+    }
+    var result = pop(testObject);
+    eq(testObject.length, 0);
+    eq(testObject[2],3);
+    eq(result, undefined);
+  },
+  'If array like objlength is undefined, create length property and set it to 0.Return undefined. Do not change array':function(){
+    var testObject = {
+      0:1,
+      1:2,
+      2:3,
+      length: undefined
+    }
+    var result = pop(testObject);
+    eq(testObject.length, 0);
+    eq(testObject[2],3);
+    eq(result, undefined);
+  },
+  'If array like obj.length is null, create length property and set it to 0.Return undefined. Do not change array':function(){
+    var testObject = {
+      0:1,
+      1:2,
+      2:3,
+      length: null
+    }
+    var result = pop(testObject);
+    eq(testObject.length, 0);
+    eq(testObject[2],3);
+    eq(result, undefined);
+  },
+  'If array like obj.length is NaN, create length property and set it to 0.Return undefined. Do not change array':function(){
+    var testObject = {
+      0:1,
+      1:2,
+      2:3,
+      length: NaN
+    }
+    var result = pop(testObject);
+    eq(testObject.length, 0);
+    eq(testObject[2],3);
+    eq(result, undefined);
+  },
+  'If array like obj.length is negative, create length property and set it to 0.Return undefined. Do not change array':function(){
+    var testObject = {
+      0:1,
+      1:2,
+      2:3,
+      length: -290
+    }
+    var result = pop(testObject);
+    eq(testObject.length, 0);
+    eq(testObject[2],3);
+    eq(result, undefined);
+  },
+  'If array like obj.length is a float, round down, dlete that position, and reduce length by 1':function(){
+    var testObject = {
+      0:1,
+      1:2,
+      2:3,
+      length: 2.9
+    }
+    var result = pop(testObject);
+    eq(testObject.length, 1);
+    eq(testObject[2], undefined);
+    eq(testObject[1], 3);
+    eq(result, 2);
+  },
+})
+</script>

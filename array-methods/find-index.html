@@ -1,0 +1,105 @@
+<script src="../simpletest.js"></script>
+<script type="text/javascript">
+//same as find() except returns index position rather than a values
+function findIndex(array,callback,optionalThisArg){
+  var length = array.length
+  if(optionalThisArg){
+    callback = callback.bind(optionalThisArg);
+  }
+  for(var i =0; i<length; i++){
+    if(callback(array[i],i,array)){
+      return i;
+    }
+  }
+  return -1;
+}
+tests({
+  'It should pass the ith element of the array as the callbacks first arg.':function(){
+    findIndex([1],function(element){
+      eq(element,1);
+    })
+  },
+  'It should pass the index as the callbacks 2nd arg.':function(){
+    findIndex([1],function(element,i){
+      eq(i, 0);
+    });
+  },
+  'It should pass the array as the callbacks 3rd arg .':function(){
+    var originalArray = [0];
+    findIndex(originalArray,function(element,i,array){
+      eq(originalArray, array);
+    });
+  },
+  'It shouldaccept an optional this value.':function(){
+    findIndex([123.23,1],function(element){
+      eq(this.description, 'optional this arg');
+    }, {description:'optional this arg'});
+  },
+
+  'It should return the first index position of a value that the callback returns a true value for.': function(){
+    var testValue = findIndex([1,2,3,2],function(element){
+      return element === 2;
+    })
+    eq(testValue,1);
+  },
+  'If no value returns true when passed into the callback, it should return -1.':function(){
+    var testValue = findIndex([1,2,3,2],function(element){
+      return element === 212;
+    })
+    eq(testValue,-1);
+  },
+  'if array length is zero, it should return -1': function(){
+    var testValue = findIndex([],function(element){
+      return element === 212;
+    })
+    eq(testValue,-1);
+  },
+  'If no value returns true when passed into the callback, it should run the callback array.length times .':function(){
+    var numberOfTimesCallbackHasRun = 0;
+    var testValue = findIndex([1,2,3,2],function(element){
+      numberOfTimesCallbackHasRun++;
+      return element === 212;
+    })
+    eq(testValue,-1);
+    eq(numberOfTimesCallbackHasRun,4);
+  },
+  'If no value returns true when passed into the callback, it should be invoked for indexs without a value.':function(){
+    var numberOfTimesCallbackHasRun = 0;
+    var testValue = findIndex([1,,,2],function(element){
+      numberOfTimesCallbackHasRun++;
+      return element === 212;
+    })
+    eq(testValue,-1);
+    eq(numberOfTimesCallbackHasRun,4);
+  },
+
+  'FindIndex should not process elements appended to array.':function(){
+    var numberOfTimesCallbackHasRun = 0;
+    var testValue = findIndex([1,,,2],function(element,i,array){
+      numberOfTimesCallbackHasRun++;
+      array.push(212);
+      return element === 212;
+    })
+    eq(testValue,-1);
+    eq(numberOfTimesCallbackHasRun,4);
+  },
+  'Findindex should visit deleted elements.':function(){
+    var numberOfTimesCallbackHasRun = 0;
+    var testValue = findIndex([1,2,23,2],function(element,i,array){
+      numberOfTimesCallbackHasRun++;
+      array.splice(1,1);
+      return element === 212;
+    })
+    eq(testValue,-1);
+    eq(numberOfTimesCallbackHasRun,4);
+  },
+  'If a elements value is cahnged, the callback should process the new value.':function(){
+    var testValue = findIndex([1,2,3,2],function(element,i,array){
+      array[1]=5;
+      return element === 5;
+    })
+    eq(testValue,1);
+  },
+
+})
+</script>

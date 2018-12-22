@@ -1,0 +1,265 @@
+<script src="../simpletest.js"></script>
+<script>
+function copyWithin(array,target,start,end){
+  var toBePasted = [];
+  if(target === undefined){
+    target =0;
+  }
+  if(typeof array === 'number'){
+    return new Number(array);
+  }
+  if(typeof array === 'boolean'){
+    return new Boolean(array);
+  }
+  if(typeof array === 'string'|| array instanceof String){
+    throw new TypeError('Cannot assign to read only property 0 of object [object String]');
+  }
+  if(target<0){
+    target = target + array.length;
+    if(target < 0){
+      target = 0;
+    }
+  }
+  if(start < 0){
+    start = start + array.length;
+    if(start < 0){
+      start = 0;
+    }
+  }
+  if( end < 0){
+    end = end+ array.length;
+  }
+
+  if(arguments.length <4){
+    end=array.length;
+  }
+  if(arguments.length <3){
+    start = 0;
+    toBePasted = Array.prototype.slice.call(array);
+  }else{
+    if(end > array.length){
+      end = array.length;
+    }
+    for(var i=start; i<end;i++){
+        toBePasted.push(array[i]);
+    }
+  }
+
+  for(var i=0; i<toBePasted.length;i++){
+    if(target+i<array.length){
+      array[target+i]=toBePasted[i];
+    }
+    if(array[target+i] === undefined){
+      delete array[target +i];
+    }
+  }
+  return array;
+}
+tests({
+  'Returns the modified array.':function(){
+    var array = [1,2,3];
+    var result = copyWithin(array);
+    eq(result,array);
+    eq(result instanceof Array, true);
+  },
+  'Can copy a target into a position.':function(){
+    var array = [1, 2, 3, 4, 5];
+    copyWithin(array,0, 3, 4);
+    var expectedResult = [4, 2, 3, 4, 5];
+    for(var i=0; i<array.length; i++){
+      eq(expectedResult[i],array[i])
+    }
+  },
+  'Can copy multiple positions.':function(){
+    var array = [1, 2, 3, 4, 5];
+    copyWithin(array,1, 3);
+    var expectedResult = [1, 4, 5, 4, 5];
+    for(var i=0; i<array.length; i++){
+      eq(expectedResult[i],array[i])
+    }
+  },
+  'If only target is given - begin is 0 and end is array.length and it starts from the target.':function(){
+    var array = [1, 2, 3, 4, 5];
+    copyWithin(array,1);
+    var expectedResult = [1, 1, 2, 3, 4];
+    for(var i=0; i<array.length; i++){
+      eq(expectedResult[i],array[i])
+    }
+  },
+  'If target is negative. starts pasting at array.length+ target the array duplicateArray.':function(){
+    var array = [1, 2, 3, 4, 5];
+    copyWithin(array,-4);
+    var expectedResult = [1, 1, 2, 3, 4];
+    for(var i=0; i<array.length; i++){
+      eq(expectedResult[i],array[i])
+    }
+  },
+  'If start is negative= begin is array.length+begin.':function(){
+    var array = [1, 2, 3, 4, 5];
+    copyWithin(array,-2,-3);
+    var expectedResult = [1, 2, 3, 3, 4];
+    for(var i=0; i<array.length; i++){
+      eq(expectedResult[i],array[i])
+    }
+  },
+  'If end is negative, end is end+array.length.':function(){
+    var array = [1, 2, 3, 4, 5];
+    copyWithin(array,-5,-3,-1);
+    var expectedResult = [3, 4, 3, 4, 5];
+    for(var i=0; i<array.length; i++){
+      eq(expectedResult[i],array[i])
+    }
+  },
+  'If end<begin, it should retrun the array w/o changing.':function(){
+    var array = [1, 2, 3, 4, 5];
+    copyWithin(array,-2,2,1);
+    var expectedResult = [1, 2, 3, 4, 5];
+    for(var i=0; i<array.length; i++){
+      eq(expectedResult[i],array[i])
+    }
+  },
+
+  'If a primitve int is called as the array, returns the int as an object.':function(){
+    var result = copyWithin(2);
+    eq(typeof result, "object");
+    eq(result instanceof Number, true);
+    eq(result.valueOf(),2)
+  },
+  'If a primitve boolean is called as the array, it should be returned as a boolean obj.':function(){
+    var result = copyWithin(true);
+    eq(typeof result, "object");
+    eq(result instanceof Boolean, true);
+    eq(result.valueOf(),true)
+  },
+  'If a function is called as the array, it should return that function.':function(){
+    function testFunction(){
+      console.log('Im a test function');
+    }
+    var result = copyWithin(testFunction,0,1,32);
+    eq(result, testFunction);
+  },
+  'Should throw a error if primitive string is called as the array.':function(){
+    try{
+      copyWithin('hola');
+    }catch(e){
+      var isTypeError = (e instanceof TypeError);
+    }
+    eq(isTypeError, true);
+  },
+  'Should throw a error if string Object is called as the array.':function(){
+    try{
+      var stringObject = new String('hola');
+      copyWithin(stringObject);
+    }catch(e){
+      var isTypeError = (e instanceof TypeError);
+    }
+    eq(isTypeError, true);
+  },
+
+  'If an empty object is called, it should be returned.':function(){
+    var object = {}
+    var result = copyWithin(object,0,1,32);
+    eq(JSON.stringify(result), '{}');
+  },
+  'If a int object is called, it should be returned w/o modification.':function(){
+    var intObj = new Number(2)
+    var result = copyWithin(intObj);
+    eq(typeof result, "object");
+    eq(result instanceof Number, true);
+    eq(result.valueOf(),2);
+    eq(result , intObj);
+  },
+  'If a boolean obj is called it should be returned.':function(){
+    var booleanObj = new Boolean(true);
+    var result = copyWithin(booleanObj);
+    eq(typeof result, "object");
+    eq(result instanceof Boolean, true);
+    eq(result.valueOf(),true);
+    eq(result, booleanObj);
+  },
+
+  'Works with array-like objects when only target is called in.':function(){
+    var testObject = {0:1, 1:2, 2:3, 3:4, 4:5, length:5};
+    copyWithin(testObject,1);
+    var expectedResult = [1, 1, 2, 3, 4];
+    for(var i=0; i<testObject.length; i++){
+      eq(expectedResult[i],testObject[i])
+    }
+  },
+
+  'Works with array-like objects when only target and begin is called in.':function(){
+    var testObject = {0:1, 1:2, 2:3, 3:4, 4:5, length:5};
+    copyWithin(testObject,1,3);
+    var expectedResult = [1, 4, 5, 4, 5];
+    for(var i=0; i<testObject.length; i++){
+      eq(expectedResult[i],testObject[i])
+    }
+  },
+
+  'Can copyWithin Array like Objects.':function(){
+    var testObject = {0:1, 1:2, 2:3, 3:4, 4:5, length:5};
+    copyWithin(testObject,0,3,4);
+    var expectedResult = [4, 2, 3, 4, 5];
+    for(var i=0; i<testObject.length; i++){
+      eq(expectedResult[i],testObject[i])
+    }
+  },
+  'If array-like obj has no length, it is returned w/o modification.':function(){
+    var testObject = {0:1, 1:2, 2:3, 3:4, 4:5};
+    copyWithin(testObject,0,3,4);
+    var expectedResult = [1, 2, 3, 4, 5];
+    for(var i=0; i<testObject.length; i++){
+      eq(expectedResult[i],testObject[i])
+    }
+  },
+
+  'If target is undefined, it should set the value of target to 0, and therefore not copy any elements.': function () {
+    returnedValue = copyWithin([1, 2, 3, 4, 5], undefined, 2, 4);
+    eq(JSON.stringify(returnedValue), JSON.stringify([3, 4, 3, 4, 5]));
+  },
+  'If \'target\' is a negative number, and computed \'target\' index is less than zero, the value of \'target\' should default to 0.': function () {
+    var testArray = [1, 2, 3, 4, 5];
+    copyWithin(testArray, -6, 1);
+    eq(testArray[0], 2);
+    eq(testArray[1], 3);
+    eq(testArray[2], 4);
+    eq(testArray[3], 5);
+    eq(testArray[4], 5);
+  },
+  'If \'start\' is a negative number, and computed \'start\' index is less than zero, the value of \'start\' should default to 0.': function () {
+    var testArray = [1, 2, 3];
+    copyWithin(testArray, 1, -4);
+    eq(testArray[0], 1);
+    eq(testArray[1], 1);
+    eq(testArray[2], 2);
+  },
+  'If provided (or computed) \'end\' index is less than the provided (or computed) \'start\' index, it should not copy any elements.': function () {
+    var testArray = [1, 2, 3];
+    copyWithin(testArray, 0, 1, -4);
+    eq(testArray[0], 1);
+    eq(testArray[1], 2);
+    eq(testArray[2], 3);
+  },
+  'If provided \'end\' index is greater than array.length, the value of \'end\' should default to array.length.': function () {
+    var testArray = [1, 2, 3];
+    copyWithin(testArray, 0, 1, 5);
+    eq(testArray[0], 2);
+    eq(testArray[1], 3);
+    eq(testArray[2], 3);
+  },
+  'If holes are present at an index ranging from target index to the end of the copied sequence, it should overwrite those holes with copied elements.': function () {
+    var testArray = [1, , 3];
+    copyWithin(testArray, 1, 0, 1);
+    eq(testArray[0], 1);
+    eq(testArray[1], 1);
+    eq(testArray[2], 3);
+  },
+  'If holes are present between \'start\' and \'end\' indexes, it should include those holes in the copied sequence.': function () {
+    var testArray = [1, , 3];
+    copyWithin(testArray, 0, 1, 2);
+    eq(0 in testArray, false);
+  },
+})
+
+
+</script>

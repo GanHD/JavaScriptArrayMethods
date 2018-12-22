@@ -1,0 +1,77 @@
+<script src="../simpletest.js"></script>
+<script type="text/javascript">
+/*Join combines strings. Takes in an optional sepeartor
+function signature join(array,separator)
+*/
+function join(array,optionalSeparator){
+  resultString ='';
+  if(arguments.length < 2 || optionalSeparator === undefined){
+    optionalSeparator = ',';
+  }
+  for(var i=0; i <array.length; i++){
+    if(i === array.length-1){
+      optionalSeparator='';
+    }
+    if(array[i] != undefined || array[i] != null ){
+      var stringToAdd=array[i] + String(optionalSeparator);
+    }else{
+      var stringToAdd = String(optionalSeparator);
+    }
+      resultString += stringToAdd;
+  }
+  return resultString;
+}
+
+  tests({
+    'If no separator, seperate each element with a comma.':function(){
+      var testArray =['hi','no','yes']
+      var resultString= join(testArray, undefined);
+      eq(resultString,'hi,no,yes')
+    },
+    'If a separator is passed in, seperate each element with the separator.':function(){
+      var testArray =['hi','no','yes']
+      var resultString= join(testArray, ', ');
+      eq(resultString,'hi, no, yes')
+    },
+
+    'If array.length is 0, return empty string.':function(){
+      var testArray =[]
+      var resultString= join(testArray, ', ');
+      eq(resultString,'')
+    },
+    'If an element is undefined or null, it is converted to the empty string.':function(){
+      var testArray =[undefined,null,,'a']
+      var resultString= join(testArray);
+      eq(resultString,",,,a")
+    },
+    'Other element types(numbers and booleans), are converted into strings and joined.':function(){
+      var testArray =[1,true,,'a']
+      var resultString= join(testArray);
+      eq(resultString,"1,true,,a")
+    },
+    'If an element is NaN, NaN is turned into a string and concated.':function(){
+      var testArray =[1,NaN,,'a']
+      var resultString= join(testArray);
+      eq(resultString,"1,NaN,,a")
+    },
+
+
+    'If seperator is a boolean or number, convert sepeartor into a string and use it.':function(){
+      var testArray =['hi','no','yes']
+      var resultString= join(testArray, 1);
+      eq(resultString,'hi1no1yes')
+       var resultString= join(testArray, true);
+       eq(resultString,'hitruenotrueyes')
+    },
+    'If seperator is NaN, use NaN as separator.':function(){
+      var testArray =['hi','no','yes']
+      var resultString= join(testArray, NaN);
+      eq(resultString,'hiNaNnoNaNyes')
+    },
+    'If seperator is null, use null as separator.':function(){
+      var testArray =['hi','no','yes']
+      var resultString= join(testArray, null);
+      eq(resultString,'hinullnonullyes');
+    },
+  })
+</script>

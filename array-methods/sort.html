@@ -1,0 +1,271 @@
+<script src="../simpletest.js"></script>
+<script type="text/javascript">
+  /* Sorts array by Unicode point value and returns it
+  can take in functions
+  An in-place algrorithm doesnt store elements elsewhere*/
+  function sort(array,optionalFunction){
+    if(!optionalFunction){
+      optionalFunction = standardSort;
+    }
+    if(array instanceof String){
+      throw new TypeError('Cannot assign to read only property 0 of object [object String]');
+    }
+    while(isArraySorted(array)){
+      for(var i=0; i< array.length-1;i++){
+        if(standardSort(array[i],array[i+1],array)){
+          var temp = array[i];
+          array[i]= array[i+1];
+          array[i+1] = temp;
+        }
+      }
+    }
+    return array;
+  }
+  // converts to string and comparing UTF-16 code units values to retunr true or false.
+  function standardSort(a,b){
+    // if(a === undefined && b != undefined){
+    //   return true;
+    // }
+    if(b === undefined && a != undefined){
+      return false;
+    }
+    //dont swap a and B if a is NaN
+    if(a!=a){
+      return false;
+    }
+    //sort a and B if only B is NaN and not A
+    if(b!=b && a===a){
+      return true;
+    }
+
+    if(typeof a != "string"){
+      a= JSON.stringify(a);
+    }
+    if(typeof b != "string"){
+      b= JSON.stringify(b);
+    }
+    if(a < b){
+      return false
+    }else{
+      return true
+    }
+  }
+  //returns true if its not sorted or false if it is sorted.
+  function isArraySorted(array){
+    var notSorted = false;
+    for(var i=0; i <array.length-1;i++){
+      //its not sorted if there is a nonUndefined element after undefined
+      if(array[i]=== undefined && array[i+1]!= undefined){
+         notSorted = true;
+      }
+      //its not sorted if there is a nonNaN element before a NaN value
+      if(array[i+1]!= array[i+1]&& array[i]=== array[i]){
+        notSorted = true;
+      }
+      if(array[i]===array[i]){
+        if(typeof array[i] != "string"){
+          var a = JSON.stringify(array[i]);
+        }else{
+          var a = array[i];
+        }
+        if(typeof array[i+1] != "string"){
+          var b = JSON.stringify(array[i+1]);
+        }else{
+          var b = array[i+1];
+        }
+        if(a > b){
+           notSorted = true;
+        }
+    }
+    }
+    return notSorted
+  }
+
+
+  tests({
+    'Returns the same function.':function(){
+      var array=[3,2,1];
+      var result = sort(array);
+      eq(result,array);
+    },
+    'sorts string by UTF-16 code order.':function(){
+      var months = ['March', 'Jan', 'Feb', 'Dec'];
+      sort(months);
+      var expectedResult = ["Dec", "Feb", "Jan", "March"];
+      for(var i=0; i< expectedResult.length; i++){
+        eq(months[i],expectedResult[i]);
+      }
+    },
+    'Can sort Numbers.':function(){
+      var array = [1, 30, 4, 21];
+      sort(array);
+      var expectedResult = [1, 21, 30, 4];
+      for(var i=0; i< expectedResult.length; i++){
+        eq(array[i],expectedResult[i]);
+      }
+    },
+    'sorts undefined tosorts the end.':function(){
+      var array = ['blue','azz','a',undefined,'aa'];
+      sort(array);
+      var expectedResult = ["a", "aa", "azz", "blue", undefined];
+      for(var i=0; i< expectedResult.length; i++){
+        eq(array[i],expectedResult[i]);
+      }
+    },
+    'Can sort multiple undefined.':function(){
+      var array = [undefined,2,undefined,23];
+      sort(array);
+      var expectedResult = [2, 23, undefined, undefined];
+      for(var i=0; i< expectedResult.length; i++){
+        eq(array[i],expectedResult[i]);
+      }
+   },
+    'NaN elements are sorted to the front.':function(){
+      var array = ['blue',NaN,'zed','a',undefined,'aa'];
+      sort(array);
+      var expectedResult = [NaN, "a", "aa", "blue","zed",undefined];
+      for(var i=1; i< expectedResult.length; i++){
+        eq(array[i],expectedResult[i]);
+      }
+      eq(isNaN(array[0]), isNaN(expectedResult[0]));
+    },
+    'Can sort multiple NaNs.':function(){
+      var array = ['blue',NaN,'zed',NaN,'a',undefined,'aa'];
+      sort(array);
+      var expectedResult = [NaN,NaN ,"a", "aa", "blue","zed",undefined];
+      for(var i=2; i< expectedResult.length; i++){
+        eq(array[i],expectedResult[i]);
+      }
+      eq(isNaN(array[0]), isNaN(expectedResult[0]));
+      eq(isNaN(array[1]), isNaN(expectedResult[1]));
+    },
+    'sorts numbers before strings.':function(){
+      var array = ['blue','green',7,2];
+      sort(array);
+      var expectedResult = [2, 7, "blue", "green"];
+      for(var i=0; i< expectedResult.length; i++){
+        eq(array[i],expectedResult[i]);
+      }
+    },
+    'sorts blank strings first.':function(){
+      var array = ['blue','green',7,2,''];
+      sort(array);
+      var expectedResult = ['',2, 7, "blue", "green"];
+      for(var i=0; i< expectedResult.length; i++){
+        eq(array[i],expectedResult[i]);
+      }
+    },
+    'Sort holes to the end even before undefined.':function(){
+      var array = ['blue',undefined,'green',undefined,,7,2,''];
+      sort(array);
+      var expectedResult = ['',2, 7, "blue", "green",undefined,undefined,,];
+      for(var i=0; i< expectedResult.length; i++){
+        eq(array[i],expectedResult[i]);
+      }
+    },
+
+    'sort null as if it was the string \'null\'.':function(){
+      var array = [null,'a','nz'];
+      sort(array);
+      var expectedResult = ['a',null,'nz'];
+      for(var i=0; i< expectedResult.length; i++){
+        eq(array[i],expectedResult[i]);
+      }
+    },
+    'If a boolean is passed into the function it should be returned.':function(){
+      var result = sort(true);
+      eq(result,true);
+    },
+    'If a primitive int is called return that int.':function(){
+      var result = sort(1);
+      eq(result,1);
+    },
+    'If a function is passed in, it is returned  w/o modification.':function(){
+      function sortFunction(){}
+      var result= sort(sortFunction);
+      eq(result,sortFunction);
+    },
+    'If a primtive string is passed in, it is returned w/o modification.':function(){
+      var testString = 'a'
+      var result= sort(testString);
+      eq(result,testString);
+    },
+    'Num Obj is returned if called into sort.':function(){
+      var numObj = new Number(0);
+      var result= sort(numObj);
+      eq(result,numObj);
+    },
+    'Boolean Obj is returned if called into sort.':function(){
+      var booleanObject = new Boolean(true);
+      var result= sort(booleanObject);
+      eq(result,booleanObject);
+    },
+    'if a string object is called in throw type error.':function(){
+
+      try{
+        var stringObject = new String('true');
+        sort(stringObject);
+      }catch(e){
+         var isError = e instanceof TypeError;
+          }
+      eq(isError, true);
+    },
+    'if optionalFunction is passed through, it sorts array by that value':function(){
+      var array = [5,1,6,3,4];
+      function reverseSortFunction(a , b){
+        return a-b;
+      }
+      var result = sort(array, reverseSortFunction);
+      var expectedResult = [1,3,4,5,6];
+      for(var i=0; i < array.length; i++){
+          eq(expectedResult[i],array[i]);
+      }
+    },
+    'sorts array-like objects w/ length.': function(){
+      var months = {0:'March',
+      1: 'Jan',
+      2: 'Feb',
+      3: 'Dec',
+    length:4}
+      sort(months);
+      var expectedResult = ["Dec", "Feb", "Jan", "March"];
+      for(var i=0; i< expectedResult.length; i++){
+        eq(months[i],expectedResult[i]);
+      }
+    },
+    'doesnt sort array-like objects w/o length.':function(){
+      var months = {0:'March',
+      1: 'Jan',
+      2: 'Feb',
+      3: 'Dec',
+      }
+      sort(months);
+      var expectedResult = ["March", "Jan", "Feb", "Dec" ];
+      for(var i=0; i< expectedResult.length; i++){
+        eq(months[i],expectedResult[i]);
+      }
+    },
+    'if null is called into sort, it should throw a typeError.': function(){
+      try{
+        sort(null);
+      }catch(e){
+        var isError = e instanceof TypeError;
+      }
+      eq(isError, true);
+    },
+    'if undefined is called into sort, it should throw a typeError.': function(){
+      try{
+        sort(undefined);
+      }catch(e){
+        var isError = e instanceof TypeError;
+      }
+      eq(isError, true);
+    },
+    'if NaN is called into sort, NaN should eb returned.': function(){
+        var result = sort(NaN);
+        eq(isNaN(result), true);
+
+    },
+
+  })
+</script>

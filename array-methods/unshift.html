@@ -1,0 +1,222 @@
+<script src="../simpletest.js"></script>
+<script type="text/javascript">
+  /*Like push adds elements to the beginning of the array retunrs new length */
+function unshift(array){
+  var indexPos =0;
+
+  if(typeof array === 'number'|| typeof array === 'boolean'
+  || array instanceof Number === true|| array instanceof Boolean === true){
+    return 0
+  }
+
+  if(!(array instanceof Array)&& typeof array != 'object'){
+    throw new TypeError('shift(' + array + ') is not a function');
+  }
+if(!array.length|| isNaN(array.length)){
+  array.length =0;
+}
+if(!Number.isInteger(array.length)){
+  array.length= Math.floor(array.length);
+}
+var duplicateArray = JSON.parse(JSON.stringify(array));
+for(var i=1; i < arguments.length;i++){
+  array[indexPos] = arguments[i];
+  indexPos++;
+  if(!(array instanceof Array)){array.length++;}
+}
+for(var i = 0 ; (i in duplicateArray || i < duplicateArray.length); i++){
+    array[indexPos] = duplicateArray[i];
+    indexPos++;
+   }
+return array.length;
+}
+  tests({
+    'returns new array length.':function(){
+      var array = [1,2];
+      var result = unshift(array,0);
+      eq(result,3);
+    },
+    'adds objects to the start of the array.':function(){
+      var array = [1,2];
+      unshift(array,0);
+
+      var whatResultShouldBe = [0,1,2]
+      for(var i=0; i<whatResultShouldBe.length; i++){
+        eq(array[i],whatResultShouldBe[i]);
+      }
+    },
+    'can add multiple arguments.':function(){
+      var array = [1,2];
+      unshift(array,-2,-1,0);
+
+      var whatResultShouldBe = [-2,-1,0,1,2]
+      for(var i=0; i<whatResultShouldBe.length; i++){
+        eq(array[i],whatResultShouldBe[i]);
+      }
+    },
+    'if no arguments are passed through returns array.length': function(){
+      var array = [];
+      var result = unshift(array);
+      eq(result,0);
+    },
+
+    'Type error if array is string .': function(){
+      try {
+        unshift('fdas');
+      } catch (e) {
+        if (!e) {
+          fail();
+        }
+      }
+    },
+    'Throw error if array is function': function() {
+      try {
+        unshift(function() {
+          console.log('error');
+        });
+      } catch (e) {
+        if (!e) {
+          fail();
+        }
+      }
+    },
+    'Throw error if array is boolean': function() {
+      try {
+        unshift(true);
+      } catch (e) {
+        if (!e) {
+          fail();
+        }
+      }
+    },
+
+
+    'can take in null.':function(){
+      var array = [1,2];
+      unshift(array,null);
+
+      var whatResultShouldBe = [null,1,2]
+      for(var i=0; i<whatResultShouldBe.length; i++){
+        eq(array[i],whatResultShouldBe[i]);
+      }
+    },
+    'can take in undefined.':function(){
+      var array = [1,2];
+      unshift(array,undefined);
+
+      var whatResultShouldBe = [undefined,1,2]
+      for(var i=0; i<whatResultShouldBe.length; i++){
+        eq(array[i],whatResultShouldBe[i]);
+      }
+    },
+    'can take in NaN.':function(){
+      var array = [1,2];
+      unshift(array,NaN);
+        eq(isNaN(array[0]),true);
+    },
+
+    'Works for array like objects .':function(){
+      var testObject = {0:1, 1:2, 2:3, length:3};
+      var result = unshift(testObject,-1);
+
+      var whatResultShouldBe = [-1,1,2,3]
+      for(var i=0; i<whatResultShouldBe.length; i++){
+        eq(testObject[i],whatResultShouldBe[i]);
+      }
+      eq(testObject.length,4);
+      eq(result,4);
+    },
+    'If no length in array-like obj, create property and set it to 0.':function(){
+      var testObject = {0:1, 1:2, 2:3};
+      var result = unshift(testObject);
+
+      var whatResultShouldBe = [1,2,3]
+      for(var i=0; i<whatResultShouldBe.length; i++){
+        eq(testObject[i],whatResultShouldBe[i]);
+      }
+      eq(testObject.length,0);
+      eq(result,0);
+    },
+    'If no length in array-like obj and an element is passed throuhg to unshift, create length and set it equal to the amount of elements passed in.':function(){
+      var testObject = {0:1, 1:2, 2:3};
+      var result = unshift(testObject,-1,0);
+
+      var whatResultShouldBe = [-1,0,1,2,3]
+      for(var i=0; i<whatResultShouldBe.length; i++){
+        eq(testObject[i],whatResultShouldBe[i]);
+      }
+      eq(testObject.length,2);
+      eq(result,2);
+    },
+    'If  length = null in array-like obj, create property and set it to 0.':function(){
+      var testObject = {0:1, 1:2, 2:3, length:null};
+      var result = unshift(testObject);
+
+      var whatResultShouldBe = [1,2,3]
+      for(var i=0; i<whatResultShouldBe.length; i++){
+        eq(testObject[i],whatResultShouldBe[i]);
+      }
+      eq(testObject.length,0);
+      eq(result,0);
+    },
+    'If  length = NaN in array-like obj, create property and set it to 0.':function(){
+      var testObject = {0:1, 1:2, 2:3, length:NaN};
+      var result = unshift(testObject);
+
+      var whatResultShouldBe = [1,2,3]
+      for(var i=0; i<whatResultShouldBe.length; i++){
+        eq(testObject[i],whatResultShouldBe[i]);
+      }
+      eq(testObject.length,0);
+      eq(result,0);
+    },
+    'If length is true, set length=1. lenght increments from 1 based on elements passed throug.': function(){
+      var testObject = {0:1, 1:2, 2:3, length:true};
+      var result = unshift(testObject,-1,0);
+
+      var whatResultShouldBe = [-1,0,1,2,3]
+      for(var i=0; i<whatResultShouldBe.length; i++){
+        eq(testObject[i],whatResultShouldBe[i]);
+      }
+      eq(testObject.length,3);
+      eq(result,3);
+    },
+    'If length is float, Round down length. Also increments length based on elements added to obj': function(){
+      var testObject = {0:1, 1:2, 2:3, length:2.5};
+      var result = unshift(testObject,0);
+
+      var whatResultShouldBe = [0,1,2,3]
+      for(var i=0; i<whatResultShouldBe.length; i++){
+        eq(testObject[i],whatResultShouldBe[i]);
+      }
+      eq(testObject.length,3);
+      eq(result,3);
+    },
+    'If called on a number primitive, it should return 0.': function () {
+      var returnedValue = unshift(1);
+      eq(returnedValue, 0);
+    },
+    'If called on a Number object, it should return 0.': function () {
+      var returnedValue = unshift(new Number);
+      eq(returnedValue, 0);
+    },
+    'If called on a boolean primitive, it should return 0.': function () {
+      var returnedValue = unshift(true);
+      eq(returnedValue, 0);
+    },
+    'If called on a Boolean object, it should return 0.': function () {
+      var returnedValue = unshift(new Boolean);
+      eq(returnedValue, 0);
+    },
+    'It should preserve holes. ': function () {
+      var holyArray = [, , ,];
+      var returnedValue = unshift(holyArray, 1);
+      var whatResultShouldBe = [1, , , ,]
+      for(var i=0; i<whatResultShouldBe.length; i++){
+        eq(holyArray[i],whatResultShouldBe[i]);
+      }
+      eq(returnedValue, 4);
+    },
+
+  })
+</script>

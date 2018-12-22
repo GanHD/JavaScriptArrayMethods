@@ -1,0 +1,126 @@
+<script src="../simpletest.js"></script>
+<script>
+/* Some is like every except only one element needs to pass
+function signature: some(array, testFunction(element[, index[, array]]), optionalThisArg )
+output: true or false
+ */
+function some(array,callback,optionalThisArg){
+  var length = array.length;
+  if(optionalThisArg){
+    callback = callback.bind(optionalThisArg);
+  }
+  for(var i =0; i<length; i++){
+    if(i in array && callback(array[i],i,array)){
+        return true;
+    }
+  }
+  return false;
+}
+tests({
+  'testing function should take in an array element as its first arg.': function(){
+    some([1],function(element){
+      eq(element,1);
+    })
+  },
+  'testing function should take in the index as the second arg.': function(){
+    some([1],function(element,i){
+      eq(i, 0);
+    });
+  },
+  'testing function should take in the array  as its third arg.': function(){
+    var originalArray = [0];
+    some(originalArray,function(element,i,array){
+      eq(originalArray, array);
+    });
+  },
+
+  'Testing function should not run if the index has no assigned value.': function(){
+    var counter =0;
+    some([1,,2,3],function(num){
+      counter++
+      return num >2020;
+    })
+    eq(counter, 3);
+  },
+  'Testing function should not run if the indexvalue has been deleted.': function(){
+    var counter =0;
+    some([1,2,3],function(num,i,array){
+      counter++
+      array.splice(2,1);
+      return num >2020;
+    })
+    eq(counter, 2);
+  },
+
+  'Some should return true if at least one element passes the testing function.': function(){
+    var someResult = some([12,2,2,1], function(num){
+      return num ===1;
+    });
+    eq(someResult,true);
+  },
+  'Some should return false if no elements passes the testing function.': function(){
+    var someResult = some([12,2,2,1], function(num){
+      return num ===6;
+    });
+    eq(someResult,false);
+  },
+
+  'Some should take in an optional this arg.': function(){
+    some([123.23,1],function(element){
+      eq(this.description, 'optional this arg');
+    }, {description:'optional this arg'});
+  },
+  'Some does not mutate the array it is called on.': function(){
+    var array = [1,2]
+    var result = some(array,function(element,i,callbackArray){
+      return element > 0;
+    });
+    eq(JSON.stringify(array), JSON.stringify([1,2]));
+  },
+  'Elements added to the array by callback are not visited.': function(){
+    var counter =0;
+    var someResult = some([1,,2,3],function(num,i,array){
+      counter++
+      array.push(2025);
+      return num >2020;
+    })
+    eq(counter, 3);
+    eq(someResult, false);
+  },
+  'If an unvisited element is changed, the new value is passed into the testing function.':function(){
+    var counter =0;
+    var someResult = some([1,,2,3],function(num,i,array){
+      counter++
+      array[3] = 2021
+      return num >2020;
+    })
+    eq(counter, 3);
+    eq(someResult, true);
+  },
+
+  'If all elements fail test, callback should be run array.length times.': function(){
+    var counter =0;
+    some([1,2,3],function(num){
+      counter++
+      return num >2020;
+    })
+    eq(counter, 3);
+  },
+  'if an element passes, it should immediately return true and some should stop running': function(){
+    var counter =0;
+    var someResult =  some([1,2,3],function(num){
+      counter++
+      return num ===2;
+    })
+    eq(counter, 2);
+    eq(someResult,true);
+  },
+  'If array is empty, it should return false.': function(){
+    var result = some([],function(element){
+      return element === 2;
+    });
+    eq(result,false);
+  },
+
+})
+</script>

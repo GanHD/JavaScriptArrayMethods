@@ -1,0 +1,101 @@
+<script src="../simpletest.js"></script>
+<script type="text/javascript">
+
+function find(array,callback,optionalThisArg){
+  //sets static length so that it doesnt run the callback for values added to the array
+  var length = array.length
+  //if a third argument is passed in, bind it to the callback
+  if(optionalThisArg){
+    callback = callback.bind(optionalThisArg);
+  }
+  //for loop that runs through the entire array
+  for(var i =0; i<length; i++){
+    //if callback returns true, return array[i]
+    if(callback(array[i],i,array)){
+      return array[i];
+    }
+  }
+  //else return undefined
+  return undefined;
+}
+
+tests({
+  'it should take in the ith element as the first argument to the callback': function(){
+    find([1],function(element){
+      eq(element,1);
+    })
+  },
+  'Index should be the second argument to the callback.': function(){
+    find([1],function(element,i){
+      eq(i, 0);
+    });
+  },
+  'The array should be the third argumetn to the callback.': function(){
+    var originalArray = [0];
+    find(originalArray,function(element,i,array){
+      eq(originalArray, array);
+    });
+  },
+  'takes in an optional this argument.': function(){
+    find([123.23,1],function(element){
+      eq(this.description, 'optional this arg');
+    }, {description:'optional this arg'});
+  },
+
+  'returns undefined if no elements of the array satsifies the testing funciton.': function(){
+    var findTest = find([1,2,3], function(element){
+      return element === 77 ;
+    })
+    eq(findTest, undefined);
+  },
+  'it should return the first element in the array that satsifies the testing function':function(){
+    var array = [0,1,2,3,1];
+    var findTest = find(array,function(element){
+      return element === 1;
+    })
+    eq(findTest, array[1]);
+  },
+  'find does not mutate the original array.': function(){
+    var originalArray = [0];
+    var findTest = find(originalArray,function(element,i,array){
+      return element ===0;
+    });
+    eq(originalArray[0],0);
+  },
+  'find ignores any elements added.': function(){
+    var array =[0,2,3,4]
+    var numberOfTimesCallbackHasRun =0;
+    var findResult=  find(array,function(e,i,array){
+      numberOfTimesCallbackHasRun++;
+      array.push(1);
+      return e ===1;
+    });
+    eq(numberOfTimesCallbackHasRun , 4)
+    eq(findResult,undefined)
+  },
+  'find accepts elements that have been cahnged by the callback.': function(){
+    var array =[,,,45]
+    var findResult = find(array,function(e,i,array){
+      array[2] = 1;
+      return e === 1;
+    });
+    eq(findResult , 1)
+  },
+  'find should iterate over empty values in the array.': function(){
+    var array =[,,,45]
+    var numberOfTimesCallbackHasRun =0;
+    find(array,function(){numberOfTimesCallbackHasRun++});
+    eq(numberOfTimesCallbackHasRun , 4)
+  },
+  'It should call callback over deleted elements.': function(){
+    var numberOfTimesCallbackHasRun =0;
+    var findResult = find([1,2,3,4],function(element,index,array){
+      numberOfTimesCallbackHasRun++
+      array.splice(3,1);
+      return element > 3;
+    })
+    eq(numberOfTimesCallbackHasRun,4);
+    eq(findResult,undefined);
+  }
+})
+</script>

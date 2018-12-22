@@ -1,0 +1,76 @@
+<script src="../simpletest.js"></script>
+<script>
+/* concat takes in 2+ arrays and returns one array thats all of thme merged
+function signature concat(array1,array2[,...arrayN]);
+*/
+function concat(){
+  var returnArray =[];
+  for(var i=0; i<arguments.length;i++){
+    if(Array.isArray(arguments[i])){
+      arguments[i].forEach(function(element){
+        returnArray.push(element);
+      });
+    }else{
+      returnArray.push(arguments[i]);
+    }
+  }
+  return returnArray;
+}
+tests({
+  'Concat returns an array.':function(){
+    var returnedValue = concat();
+    eq(Array.isArray(returnedValue), true);
+  },
+  'Concat returns a new array.':function(){
+    var testArray =[1]
+    var returnedValue = concat(testArray);
+    eq(returnedValue === testArray, false);
+  },
+  'Concat returns an array thats the argument arrays merged in order of provided arguments.':function(){
+    var concatResult = concat([1,2,3],[4,5,6]);
+    eq(JSON.stringify(concatResult),JSON.stringify([1,2,3,4,5,6]));
+    eq(concatResult[0],1);
+    eq(concatResult[3],4);
+    eq(concatResult[5],6);
+  },
+  'Concat can take in N amount of arrays.':function(){
+    var concatResult = concat([1],[2],[3],[4,5,6]);
+    eq(JSON.stringify(concatResult),JSON.stringify([1,2,3,4,5,6]));
+  },
+  'Concat does not mutate the arrays passed in.':function(){
+    var arrayOne = [1,2,3];
+    var arrayTwo = [4,5,6];
+    var concatResult = concat([1,2,3],[4,5,6]);
+    eq(JSON.stringify(arrayOne),JSON.stringify([1,2,3]));
+    eq(JSON.stringify(arrayTwo),JSON.stringify([4,5,6]));
+  },
+
+  'Concat should copy object references and not the obj itself.':function(){
+    var testArray = {a:1};
+    var returnedValue = concat(testArray);
+    eq(returnedValue[0].a , 1);
+    testArray.a = 2;
+    eq(returnedValue[0].a , 2);
+  },
+  'It should not alter this.':function(){
+    var concatResult = concat(this);
+    eq(concatResult[0],this)
+  },
+  'It should be able to take in other data types other than arrays.':function(){
+    var concatResult = concat(0,'yes',false);
+    eq(concatResult[0],0);
+    eq(concatResult[1],'yes');
+    eq(concatResult[2],false);
+  },
+  'it should accept empty array values.': function(){
+    var concatResult = concat([,]);
+    eq(0 in concatResult, false)
+    eq(concatResult.toString(),'')
+  },
+  'It should not recurse into nested array arguments.': function(){
+    var concatResult = concat([[0,2,3],[3]])
+    eq(Array.isArray(concatResult[0]), true);
+    eq(Number.isInteger(concatResult[0][0]), true)
+  },
+})
+</script>
